@@ -1,0 +1,25 @@
+{
+  "name": "notedly",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "concurrently": "^7.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "api": "cd api && npm start",
+    "start": "npx concurrently \"npm run api\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samuelgallo/notedly.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/samuelgallo/notedly/issues"
+  },
+  "homepage": "https://github.com/samuelgallo/notedly#readme"
+}
