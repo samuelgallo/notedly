@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const { ApolloServer, gql } = require('apollo-server-express');
+const jwt = require('jsonwebtoken');
 
 const db = require('./db');
 
@@ -53,11 +54,30 @@ db.connect(DB_HOST);
 //   }
 // };
 
+const getUser = token => {
+  if (token) {
+    try {
+      return jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      // if there's a problem with th token
+      throw new Error('Session invalid');
+    }
+  }
+};
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: () => {
-    return { models };
+  context: ({ req }) => {
+    // get user token from headers
+    const token = req.headers.authorization;
+
+    // try to retrieve a user with token
+    const user = getUser(token);
+
+    console.log(user);
+
+    return { models, user };
   }
 });
 

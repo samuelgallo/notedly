@@ -5,26 +5,60 @@ const {
   AuthenticationError,
   ForbiddenError
 } = require('apollo-server-express');
+const mongoose = require('mongoose');
+
 const gravatar = require('../util/gravatar');
 
 const models = require('../models');
 
 module.exports = {
-  newNote: async (parent, args) => {
+  newNote: async (parent, args, { models, user }) => {
+    // if there is no user on the context, throw an authentication error.
+    if (!user) {
+      throw new AuthenticationError('You must be signed in to create a note');
+    }
+
     return await models.Note.create({
       content: args.content,
-      author: args.author
+      author: mongoose.Types.ObjectId(user.id)
     });
   },
-  deleteNote: async (parent, { id }, { models }) => {
+  deleteNote: async (parent, { id }, { models, user }) => {
+    if (!user) {
+      throw new AuthenticationError('You must be signed in to delete a note');
+    }
+
+    //find a note
+    const note = await models.Note.findById(id);
+
+    // if the note owner and current user dont match, throw a forbidden error.
+    if (note && String(note.author) !== user.id) {
+      throw new ForbiddenError(
+        "You don't  have permissions to delete the note."
+      );
+    }
+
     try {
-      await models.Note.findOneAndRemove({ _id: id });
+      await note.remove();
       return true;
     } catch (err) {
       return false;
     }
   },
-  updateNote: async (parent, { content, author, id }, { models }) => {
+  updateNote: async (parent, { content, author, id }, { models, user }) => {
+    // if not a user, thorw an Authentication error.
+    if (!user) {
+      throw new AuthenticationError('You must be signed in to update a note');
+    }
+
+    // find the note
+    const note = await models.Note.findById(id);
+
+    // if the note owner and current user dont match, throw a forbidden error.
+    if (note && String(note.author) !== user.id) {
+      throw new ForbiddenError("You don't have permission to update the note.");
+    }
+
     return await models.Note.findOneAndUpdate(
       {
         _id: id
@@ -70,7 +104,7 @@ module.exports = {
       email = email.trim().toLowerCase();
     }
 
-    // fint by email or username
+    // find by email or username
     const user = await models.User.findOne({
       $or: [{ email }, { username }]
     });
