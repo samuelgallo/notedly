@@ -122,5 +122,51 @@ module.exports = {
 
     // create and return the json web token
     return jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+  },
+  toggleFavorite: async (parent, { id }, { module, user }) => {
+    // if no user context is passed, throw auth error
+    if (!user) {
+      throw new AuthenticationError('You need to be authenticated first.');
+    }
+
+    // check to see if the user has already favorited the note
+    let noteCheck = await models.Note.findById(id);
+    const hasUser = noteCheck.favoritedBy.indexOf(user.id);
+    console.log(hasUser);
+    // if the user exists in the list
+    // pull the from the list and reduce the favoriteCount by 1
+    if (hasUser >= 0) {
+      return await models.Note.findByIdAndUpdate(
+        id,
+        {
+          $pull: {
+            favoritedBy: mongoose.Types.ObjectId(user.id)
+          },
+          $inc: {
+            favoriteCount: -1
+          }
+        },
+        {
+          // set new to true to return the update doc
+          new: true
+        }
+      );
+    } else {
+      // if the user doesnt exist in the list add them to the list and increment the favoriteCount by 1
+      return await models.Note.findByIdAndUpdate(
+        id,
+        {
+          $push: {
+            favoritedBy: mongoose.Types.ObjectId(user.id)
+          },
+          $inc: {
+            favoriteCount: 1
+          }
+        },
+        {
+          new: true
+        }
+      );
+    }
   }
 };
