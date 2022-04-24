@@ -2,7 +2,11 @@ require('dotenv').config();
 
 const express = require('express');
 const { ApolloServer, gql } = require('apollo-server-express');
+const depthLimit = require('graphql-depth-limit');
+const { createComplexityLimitRule } = require('graphql-validation-complexity');
 const jwt = require('jsonwebtoken');
+const helmet = require('helmet');
+const cors = require('cors');
 
 const db = require('./db');
 
@@ -11,48 +15,12 @@ const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 
 const app = express();
+app.use(helmet());
+app.use(cors());
 
 const port = process.env.PORT || 4000;
 const DB_HOST = process.env.DB_HOST;
 db.connect(DB_HOST);
-
-// let notes = [
-//   {
-//     id: '1',
-//     content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-//     author: 'Adam'
-//   },
-//   {
-//     id: '2',
-//     content: 'Duis vulputate mattis augue, a feugiat odio placerat eget. '
-//   },
-//   {
-//     id: '3',
-//     content: 'Phasellus aliquam convallis ligula vitae scelerisque.',
-//     author: 'Test'
-//   }
-// ];
-
-// const resolvers = {
-//   Query: {
-//     hello: () => 'Hello world!',
-//     notes: async () => {
-//       return await models.Note.find();
-//     },
-//     note: async (parent, args) => {
-//       //return notes.find(note => note.id === args.id);
-//       return await models.Note.findById(args.id);
-//     }
-//   },
-//   Mutation: {
-//     newNote: async (parent, args) => {
-//       return await models.Note.create({
-//         content: args.content,
-//         author: args.author
-//       });
-//     }
-//   }
-// };
 
 const getUser = token => {
   if (token) {
@@ -68,12 +36,13 @@ const getUser = token => {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req }) => {
+  validationRules: [depthLimit(5), createComplexityLimitRule(1000)],
+  context: async ({ req }) => {
     // get user token from headers
     const token = req.headers.authorization;
 
     // try to retrieve a user with token
-    const user = getUser(token);
+    const user = await getUser(token);
 
     console.log(user);
 
