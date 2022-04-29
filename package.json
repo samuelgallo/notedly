@@ -9,7 +9,7 @@
   "devDependencies": {},
   "scripts": {
     "api": "cd api && npm start",
-    "web": "cd web && npm start",
+    "web": "cd web && npm run dev",
     "start": "npx concurrently \"npm run api\" \"npm run web\""
   },
   "repository": {
