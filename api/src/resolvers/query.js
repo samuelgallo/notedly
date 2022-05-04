@@ -24,7 +24,7 @@ module.exports = {
   },
   noteFeed: async (parent, { cursor }, { models }) => {
     // limit of 10 items
-    const limit = 10;
+    const limit = 5;
 
     // set the default hasNextPage value to false
     let hasNextPage = false;
