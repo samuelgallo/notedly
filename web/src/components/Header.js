@@ -56,7 +56,7 @@ const Header = props => {
               localStorage.removeItem('token');
               client.resetStore();
               client.writeData({ data: { isLoggedIn: false } });
-              props.history.push('/');
+              props.history.push('/signin');
             }}
           >
             Log Out
