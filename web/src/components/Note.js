@@ -1,19 +1,18 @@
 import React from 'react';
-import { useQuery } from '@apollo/client';
 import ReactMarkdown from 'react-markdown';
 import { format } from 'date-fns';
 import styled from 'styled-components';
+import { useQuery } from '@apollo/client';
 
 import NoteUser from './NoteUser';
 import { IS_LOGGED_IN } from '../gql/query';
 
-// Styles
+// Keep notes from extending wider than 800px
 const StyledNote = styled.article`
-  max-width: 100%;
-  margin: 0;
-  /* border-bottom: 1px solid #b7b7b7;
-  margin-bottom: 15px; */
+  margin: 0 auto;
 `;
+
+// Style the note meta data
 const MetaData = styled.div`
   @media (min-width: 500px) {
     display: flex;
@@ -21,17 +20,21 @@ const MetaData = styled.div`
   }
 `;
 
+// add some space between the avatar and meta info
 const MetaInfo = styled.div`
-  padding-right: 1rem;
+  padding-right: 1em;
 `;
 
+// align 'Favorites' to the right on large screens
 const UserActions = styled.div`
   margin-left: auto;
 `;
 
 const Note = ({ note }) => {
   const { loading, error, data } = useQuery(IS_LOGGED_IN);
+  // if the data is loading, display a loading message
   if (loading) return <p>Loading...</p>;
+  // if there is an error fetching the data, display an error message
   if (error) return <p>Error!</p>;
 
   return (
@@ -40,13 +43,13 @@ const Note = ({ note }) => {
         <MetaInfo>
           <img
             src={note.author.avatar}
-            alt={note.author.username}
+            alt={`${note.author.username} avatar`}
             height="50px"
           />
         </MetaInfo>
         <MetaInfo>
-          <em>by </em> {note.author.username} <br />
-          {format(note.createdAt, 'MM/DD/YYYY')}
+          <em>by</em> {note.author.username} <br />
+          {format(note.createdAt, 'MMM Do YYYY')}
         </MetaInfo>
         {data.isLoggedIn ? (
           <UserActions>
@@ -54,7 +57,7 @@ const Note = ({ note }) => {
           </UserActions>
         ) : (
           <UserActions>
-            <em>Favorites: {note.favoriteCount}</em>
+            <em>Favorites:</em> {note.favoriteCount}
           </UserActions>
         )}
       </MetaData>
